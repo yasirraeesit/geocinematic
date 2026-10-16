@@ -85,18 +85,18 @@ export default function Sidebar({
       {!isOpen && (
         <button
           onClick={onToggle}
-          className="fixed left-6 top-24 z-30 flex items-center gap-2 backdrop-blur-md bg-slate-950/80 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white px-3.5 py-2.5 rounded-xl shadow-2xl transition"
+          className="fixed left-6 top-20 z-30 flex items-center gap-2 backdrop-blur-md bg-slate-950/85 hover:bg-slate-900 border border-slate-700/80 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl shadow-2xl transition"
           title="Open Studio Panel"
         >
-          <Layers size={16} className="text-amber-400" />
+          <Layers size={15} className="text-amber-400" />
           <span className="text-xs font-mono font-medium">STUDIO CONTROLS</span>
-          <ChevronRight size={14} />
+          <ChevronRight size={13} />
         </button>
       )}
 
       {/* Main Drawer */}
       <div
-        className={`fixed top-0 left-0 bottom-0 z-30 w-96 backdrop-blur-2xl bg-slate-950/90 border-r border-slate-800/90 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 bottom-0 z-30 w-96 overflow-hidden backdrop-blur-2xl bg-slate-950/95 border-r border-slate-800/90 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -122,7 +122,7 @@ export default function Sidebar({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-800/80 px-4 pt-2 gap-2 text-xs font-medium font-mono">
+        <div className="flex border-b border-slate-800/80 px-4 pt-2 gap-2 text-xs font-medium font-mono overflow-x-auto custom-scrollbar flex-nowrap">
           <button
             onClick={() => {
               setActiveTab('geopolitical');

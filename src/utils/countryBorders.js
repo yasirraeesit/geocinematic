@@ -197,33 +197,36 @@ export function createExtrudedCountryMesh(countryFeature, baseRadius = 5.0, extr
     topCapVertices.push(...capVerts);
   });
 
-  // 1. Extruded Side Walls Mesh (darker rich extrusion color)
+  // 1. Extruded Side Walls Mesh (rich illuminated extrusion color)
   if (wallVertices.length > 0) {
     const wallGeo = new THREE.BufferGeometry();
     wallGeo.setAttribute('position', new THREE.Float32BufferAttribute(wallVertices, 3));
     wallGeo.computeVertexNormals();
 
-    const wallColor = new THREE.Color(colorHex).multiplyScalar(0.7);
+    const baseColor = new THREE.Color(colorHex);
     const wallMat = new THREE.MeshStandardMaterial({
-      color: wallColor,
-      roughness: 0.4,
-      metalness: 0.2,
+      color: baseColor.clone().multiplyScalar(0.75),
+      emissive: baseColor.clone().multiplyScalar(0.22),
+      roughness: 0.35,
+      metalness: 0.1,
       side: THREE.DoubleSide
     });
     const wallMesh = new THREE.Mesh(wallGeo, wallMat);
     group.add(wallMesh);
   }
 
-  // 2. Top Cap Surface Mesh (vibrant red / highlighted plateau)
+  // 2. Top Cap Surface Mesh (vibrant luminous plateau matching reference image)
   if (topCapVertices.length > 0) {
     const capGeo = new THREE.BufferGeometry();
     capGeo.setAttribute('position', new THREE.Float32BufferAttribute(topCapVertices, 3));
     capGeo.computeVertexNormals();
 
+    const baseColor = new THREE.Color(colorHex);
     const capMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(colorHex),
-      roughness: 0.35,
-      metalness: 0.15,
+      color: baseColor,
+      emissive: baseColor.clone().multiplyScalar(0.52),
+      roughness: 0.25,
+      metalness: 0.1,
       side: THREE.DoubleSide
     });
     const capMesh = new THREE.Mesh(capGeo, capMat);
@@ -237,7 +240,7 @@ export function createExtrudedCountryMesh(countryFeature, baseRadius = 5.0, extr
       color: 0xffffff,
       linewidth: 3,
       transparent: true,
-      opacity: 0.95
+      opacity: 1.0
     });
     const outlineLine = new THREE.Line(outlineGeo, outlineMat);
     group.add(outlineLine);

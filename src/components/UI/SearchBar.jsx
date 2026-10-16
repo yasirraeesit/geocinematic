@@ -85,8 +85,8 @@ export default function SearchBar({ countriesList = [], onSelectCountry, selecte
   return (
     <div
       ref={containerRef}
-      className={`fixed top-5 left-1/2 -translate-x-1/2 z-30 transition-all duration-300 ${
-        isOpen ? 'w-[440px] max-w-[94vw]' : 'w-84 max-w-[90vw]'
+      className={`fixed top-5 left-6 z-30 transition-all duration-300 ${
+        isOpen ? 'w-[420px] max-w-[94vw]' : 'w-72 max-w-[85vw]'
       }`}
     >
       {/* Search Input Bar */}

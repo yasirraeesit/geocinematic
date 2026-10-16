@@ -632,6 +632,9 @@ export default function GlobeCanvas({
       if (obj.material) obj.material.dispose();
     }
 
+    // Only draw routes and beacons in 'expeditions' mode
+    if (appMode !== 'expeditions') return;
+
     const globeRadius = 5;
     const routes = activeStory.routes || [];
     const totalRoutes = routes.length;
@@ -751,7 +754,7 @@ export default function GlobeCanvas({
         controls.target.set(0, 0, 0);
       }
     }
-  }, [activeStory, progress, cameraMode]);
+  }, [appMode, activeStory, progress, cameraMode]);
 
   // Helper to add pulsing marker pin
   const addCityMarker = (group, position, city, colorHex) => {
