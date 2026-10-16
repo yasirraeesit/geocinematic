@@ -2,13 +2,15 @@
 
 # 🌍 GeoCinematic 3D — World Documentary Map Studio
 
-**Create broadcast-quality 3D animated documentary maps, flight paths, and cinematic camera choreography directly in your browser.**
+**Create broadcast-quality 3D animated documentary maps, national flag draped country plateaus, geopolitical coalitions, and flight paths directly in your browser.**
 
+[![Live Demo](https://img.shields.io/badge/Demo-Live_on_GitHub_Pages-22c55e?style=for-the-badge&logo=github)](https://yasirraeesit.github.io/geocinematic/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-18-cyan.svg)](https://reactjs.org/)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL-black.svg)](https://threejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-Bundler-646CFF.svg)](https://vitejs.dev/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+### 🚀 **[Experience the Live Studio Interactive Demo](https://yasirraeesit.github.io/geocinematic/)**
 
 </div>
 
@@ -18,7 +20,7 @@
 
 Documentary video creators (inspired by channels like *Vox, Johnny Harris, CaspianReport, RealLifeLore, and Kings and Generals*) often spend hours in After Effects creating animated map sequences.
 
-**GeoCinematic 3D** provides a dedicated, browser-based studio that generates 3D photorealistic Earth animations with Great Circle flight arcs, animated traveling arrows, customizable documentary lower-thirds, and one-click 60FPS video recording.
+**GeoCinematic 3D** provides a dedicated, browser-based studio that generates 3D photorealistic Earth animations with national-flag draped country extrusions, Great Circle flight arcs, animated traveling arrows, customizable documentary lower-thirds, and one-click 60FPS video recording.
 
 ---
 
@@ -33,17 +35,23 @@ Documentary video creators (inspired by channels like *Vox, Johnny Harris, Caspi
   - Realistic Rayleigh atmospheric rim glow shader.
   - Deep space starfield with 2,000 multi-spectral stars.
 
-- **🏛️ Geopolitical 3D Perspective (Extruded Plateaus)**:
-  - 3D raised country plateaus with extruded vertical walls and glowing illuminated borders (inspired by *Vox* and *Johnny Harris*).
-  - Floating neighboring country callout badges with national flag emojis.
-  - Golden cinematic documentary title banners.
-  - Interactive country search bar with instant auto-swoop camera framing.
+- **🏛️ Geopolitical 3D Perspective (National Flag Extrusions & In-Scene Typography)**:
+  - **National Flag Coverage**: Country plateaus are draped with self-luminous official national flags mapped across exact sovereign borders.
+  - **Inscribed 3D Surface Name Plaques**: Country names and sovereign territory badges are rendered directly ON the country's terrain, rotating naturally in 3D perspective without detached floating 2D clutter.
+  - **Self-Luminous Emissive Maps**: Vivid emerald greens, crimson reds, bright whites, and azure blues that remain 100% visible and brilliant from any camera angle.
+  - **Global Search (`⌘K` / `Ctrl+K`)**: Instant search and cinematic swoop to any country worldwide.
 
 - **🛡️ Multi-Country Alliances & Coalitions**:
   - Color-coded coalition visualization (e.g., *NATO vs. Russia*, *Middle East Geopolitical Alignment*, *BRICS+ vs. G7*, *Indo-Pacific*).
   - Simultaneous 3D extrusion of entire military/political treaties with team palette branding.
   - Interactive click-to-assign on the 3D globe to paint or draft countries into coalitions.
   - Collapsible Alliance Scorecard with country counts and national flag rosters.
+
+- **🔍 Enhanced Cinematic Zoom & Inspection**:
+  - **Macro Drone Inspection**: Zoom altitude down to `5.25` to inspect relief topography and borders right above mountain peaks.
+  - **Deep Space Orbit**: Zoom altitude up to `28.0` for full orbital perspective.
+  - **Dedicated Zoom Controls Dock**: On-screen floating widget with `[+]` Zoom In, `[-]` Zoom Out, and `[⟲]` Reset Framing.
+  - **Double-Click to Fly**: Double-clicking anywhere on Earth smoothly glides the camera directly into that geographic coordinate.
 
 - **✈️ Animated Flight Paths & Geodesic Arcs**:
   - True 3D Great Circle parabolic arc trajectories.
@@ -84,11 +92,16 @@ Documentary video creators (inspired by channels like *Vox, Johnny Harris, Caspi
 
 | Shortcut | Action |
 | :--- | :--- |
-| `[Space]` | Play / Pause animation |
-| `[H]` | Toggle Clean Screen Mode (hide UI for recording) |
-| `[Esc]` | Exit Clean Screen Mode |
-| `[Left Drag]` | Orbit & tilt camera |
-| `[Mouse Wheel]` | Zoom altitude in / out |
+| `[Space]` | Play / Pause route animation |
+| `[+]` or `[=]` | Smoothly Zoom In (Altitude −22%) |
+| `[-]` or `[_]` | Smoothly Zoom Out (Altitude +28%) |
+| `[0]` | Reset Camera to Default Framing |
+| `[Double Click]` | Fly camera directly toward clicked coordinate |
+| `[Ctrl + K]` or `[/]` | Open Global Country Search Modal |
+| `[H]` | Toggle Clean Screen Mode (Hide UI for pristine recording) |
+| `[Esc]` | Exit Clean Screen Mode / Close Modals |
+| `[Left Drag]` | Orbit & tilt 3D Earth |
+| `[Mouse Wheel]` | Smooth zoom altitude |
 
 ---
 
@@ -96,7 +109,7 @@ Documentary video creators (inspired by channels like *Vox, Johnny Harris, Caspi
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/geocinematic.git
+git clone https://github.com/yasirraeesit/geocinematic.git
 cd geocinematic
 ```
 
