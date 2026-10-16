@@ -139,10 +139,12 @@ export default function GlobeCanvas({
 
     // Load Real NASA Satellite Textures
     const textureLoader = new THREE.TextureLoader();
+    const bUrl = import.meta.env.BASE_URL || './';
+    const cleanBase = bUrl.endsWith('/') ? bUrl : `${bUrl}/`;
     
     // Day Texture (NASA Blue Marble)
     const dayTexture = textureLoader.load(
-      '/textures/earth_day.jpg',
+      `${cleanBase}textures/earth_day.jpg`,
       () => renderer.render(scene, camera),
       undefined,
       () => createProceduralEarthTexture() // fallback
@@ -150,25 +152,25 @@ export default function GlobeCanvas({
 
     // Night Lights Texture (NASA Black Marble)
     const nightTexture = textureLoader.load(
-      '/textures/earth_night.jpg',
+      `${cleanBase}textures/earth_night.jpg`,
       () => renderer.render(scene, camera)
     );
 
     // Topographic Bump/Elevation Map
     const topoBumpMap = textureLoader.load(
-      '/textures/earth_topo.png',
+      `${cleanBase}textures/earth_topo.png`,
       () => renderer.render(scene, camera)
     );
 
     // Specular Water Mask (makes oceans reflect light like real water)
     const waterSpecularMap = textureLoader.load(
-      '/textures/earth_water.png',
+      `${cleanBase}textures/earth_water.png`,
       () => renderer.render(scene, camera)
     );
 
     // Realistic Cloud Texture
     const cloudTexture = textureLoader.load(
-      '/textures/earth_clouds.png',
+      `${cleanBase}textures/earth_clouds.png`,
       () => renderer.render(scene, camera)
     );
 
@@ -222,7 +224,9 @@ export default function GlobeCanvas({
     scene.add(countryGroup);
 
     // Fetch World Countries GeoJSON for political borders and 3D extrusion
-    fetch('/data/countries.geojson')
+    const bUrlGeo = import.meta.env.BASE_URL || './';
+    const cleanBaseGeo = bUrlGeo.endsWith('/') ? bUrlGeo : `${bUrlGeo}/`;
+    fetch(`${cleanBaseGeo}data/countries.geojson`)
       .then((res) => res.json())
       .then((data) => {
         stateRef.current.geoJsonData = data;
