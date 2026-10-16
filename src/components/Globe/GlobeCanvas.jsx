@@ -244,15 +244,57 @@ export default function GlobeCanvas({
       })
       .catch((err) => console.error('Failed to load countries GeoJSON:', err));
 
-    // Precise Three.js OrbitControls with physical damping / inertia
+    // Precise Three.js OrbitControls with physical damping / inertia & extended zoom range
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.06;
+    controls.dampingFactor = 0.08;
     controls.rotateSpeed = 0.8;
-    controls.zoomSpeed = 1.0;
-    controls.minDistance = 6.0;
-    controls.maxDistance = 25.0;
+    controls.zoomSpeed = 1.25;
+    controls.minDistance = 5.25; // Close-up macro inspection of plateaus and terrain
+    controls.maxDistance = 28.0; // Deep space orbit
     controls.enablePan = false;
+
+    // Smooth Animated Zoom Method
+    const handleZoom = (factor) => {
+      const dir = new THREE.Vector3().subVectors(camera.position, controls.target);
+      const currentDist = dir.length();
+      let newDist;
+
+      if (factor === 0) {
+        newDist = 9.6; // Default cinematic framing distance
+      } else {
+        newDist = Math.max(5.3, Math.min(26.0, currentDist * factor));
+      }
+
+      const newPos = controls.target.clone().add(dir.normalize().multiplyScalar(newDist));
+      stateRef.current.targetCamPos = newPos;
+      stateRef.current.targetLookAt = controls.target.clone();
+      stateRef.current.isFlying = true;
+    };
+
+    // Custom Event Listener for UI Zoom Controls
+    const onGlobeZoom = (e) => {
+      if (typeof e.detail?.factor === 'number') {
+        handleZoom(e.detail.factor);
+      }
+    };
+    window.addEventListener('globe-zoom', onGlobeZoom);
+
+    // Keyboard Shortcuts for Zooming (+, -, 0)
+    const onKeyDown = (e) => {
+      if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        handleZoom(0.78);
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        handleZoom(1.28);
+      } else if (e.key === '0') {
+        e.preventDefault();
+        handleZoom(0);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
 
     // Raycasting for Direct Country Selection & Hover Tooltips
     const raycaster = new THREE.Raycaster();
@@ -261,6 +303,25 @@ export default function GlobeCanvas({
 
     const onPointerDown = (e) => {
       pointerDownPos = { x: e.clientX, y: e.clientY };
+    };
+
+    // Double-click to zoom directly toward clicked point
+    const onDblClick = (e) => {
+      if (globeMesh) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObject(globeMesh);
+        if (intersects.length > 0) {
+          const pt = intersects[0].point;
+          const normal = pt.clone().normalize();
+          stateRef.current.targetLookAt = pt;
+          stateRef.current.targetCamPos = pt.clone().add(normal.multiplyScalar(3.2));
+          stateRef.current.isFlying = true;
+        }
+      }
     };
 
     const onPointerUp = (e) => {
@@ -321,6 +382,7 @@ export default function GlobeCanvas({
     const canvasEl = renderer.domElement;
     canvasEl.addEventListener('pointerdown', onPointerDown);
     canvasEl.addEventListener('pointerup', onPointerUp);
+    canvasEl.addEventListener('dblclick', onDblClick);
     window.addEventListener('pointermove', onPointerMove);
 
     // Save references
@@ -445,8 +507,11 @@ export default function GlobeCanvas({
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('globe-zoom', onGlobeZoom);
+      window.removeEventListener('keydown', onKeyDown);
       canvasEl.removeEventListener('pointerdown', onPointerDown);
       canvasEl.removeEventListener('pointerup', onPointerUp);
+      canvasEl.removeEventListener('dblclick', onDblClick);
       window.removeEventListener('pointermove', onPointerMove);
       controls.dispose();
       if (renderer.domElement && container.contains(renderer.domElement)) {
@@ -577,31 +642,9 @@ export default function GlobeCanvas({
       stateRef.current.targetLookAt = countryVec;
       stateRef.current.isFlying = true;
 
-      // 4. Gather Neighboring Countries for Floating Labels & Flags (Clean limit: 4 neighbors)
-      const neighbors = getNeighborCountries(geoJsonData.features, feature, 4);
-      const labelCoords = [
-        {
-          name: feature.properties.NAME,
-          vec3: countryVec,
-          isFeatured: true,
-          flag: getFlagEmoji(feature.properties.ISO_A2),
-          iso2: feature.properties.ISO_A2
-        }
-      ];
-
-      neighbors.forEach(({ feature: nf, centroid: nc }) => {
-        if (nf.properties.NAME.toLowerCase() !== feature.properties.NAME.toLowerCase()) {
-          labelCoords.push({
-            name: nf.properties.NAME,
-            vec3: latLonToVector(nc.lat, nc.lon, 5.05),
-            isFeatured: false,
-            flag: getFlagEmoji(nf.properties.ISO_A2),
-            iso2: nf.properties.ISO_A2
-          });
-        }
-      });
-
-      stateRef.current.activeLabelCoords = labelCoords;
+      // 4. Inscribed 3D surface name plaque is used instead of detached floating 2D badges
+      stateRef.current.activeLabelCoords = [];
+      if (onLabelsUpdate) onLabelsUpdate([]);
     }
   }, [geoJsonData, appMode, selectedCountry, extrudeHeight, countryColor, alliances]);
 

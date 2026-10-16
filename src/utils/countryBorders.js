@@ -50,6 +50,43 @@ export function findCountryByLatLon(geoJsonData, lat, lon) {
   return null;
 }
 
+// Helper to get reliable 2-letter ISO country code from GeoJSON feature
+export function getCountryIso2(feature) {
+  if (!feature || !feature.properties) return null;
+  const p = feature.properties;
+  const candidates = [p.ISO_A2_EH, p.ISO_A2, p.WB_A2, p.POSTAL];
+  for (const c of candidates) {
+    if (typeof c === 'string' && c.length === 2 && c !== '-99') {
+      return c.toUpperCase();
+    }
+  }
+  const nameMap = {
+    'iran': 'IR',
+    'united states of america': 'US',
+    'united states': 'US',
+    'russia': 'RU',
+    'china': 'CN',
+    'france': 'FR',
+    'norway': 'NO',
+    'ukraine': 'UA',
+    'israel': 'IL',
+    'saudi arabia': 'SA',
+    'taiwan': 'TW',
+    'united kingdom': 'GB',
+    'germany': 'DE',
+    'japan': 'JP',
+    'india': 'IN',
+    'turkey': 'TR',
+    'syria': 'SY',
+    'iraq': 'IQ',
+    'yemen': 'YE',
+    'united arab emirates': 'AE',
+    'egypt': 'EG'
+  };
+  const lowerName = (p.NAME || '').toLowerCase();
+  return nameMap[lowerName] || null;
+}
+
 // Helper to convert ISO-2 code to country flag emoji
 export function getFlagEmoji(countryCode) {
   if (!countryCode || countryCode.length !== 2) return '🌐';
@@ -103,9 +140,9 @@ export function createGlobalBordersMesh(geoJsonData, radius = 5.008) {
   return new THREE.LineSegments(geometry, material);
 }
 
-// Triangulate a 2D spherical polygon into 3D vertices using simple ear-clipping/projection
+// Triangulate a 2D spherical polygon into 3D vertices + longitude/latitude points for UV mapping
 function triangulatePolygonOnSphere(coords, radius) {
-  if (!coords || coords.length < 3) return [];
+  if (!coords || coords.length < 3) return { vertices: [], lonLats: [] };
 
   // Project coords to 2D local plane for triangulation
   const [centerLon, centerLat] = coords[0];
@@ -114,9 +151,6 @@ function triangulatePolygonOnSphere(coords, radius) {
     y: lat - centerLat
   }));
 
-  // Simple fan or ear triangulation
-  const vertices = [];
-  // Three.js built-in shape triangulation
   const flatCoords = [];
   pts2D.forEach((p) => flatCoords.push(p.x, p.y));
 
@@ -124,24 +158,154 @@ function triangulatePolygonOnSphere(coords, radius) {
   try {
     triangles = THREE.ShapeUtils.triangulateShape(pts2D, []);
   } catch (e) {
-    // Fallback simple centroid fan
     for (let i = 1; i < coords.length - 1; i++) {
       triangles.push([0, i, i + 1]);
     }
   }
 
+  const vertices = [];
+  const lonLats = [];
   triangles.forEach((tri) => {
     tri.forEach((index) => {
       const [lon, lat] = coords[index];
       const vec = latLonToVector(lat, lon, radius);
       vertices.push(vec.x, vec.y, vec.z);
+      lonLats.push([lon, lat]);
     });
   });
 
-  return vertices;
+  return { vertices, lonLats };
 }
 
-// Create 3D Extruded Country Prism (Plateau) with vertical walls and glowing top cap
+// In-Scene 3D Surface Country Name Plaque (lies flat on top of the extruded plateau)
+export function createCountrySurfaceNameMesh(countryName, iso2, centroid, topRadius, bbox) {
+  if (!countryName) return null;
+
+  // 1. Calculate physical sizing based on country geography span
+  const spanLon = Math.max(1.5, (bbox?.maxLon ?? centroid.lon + 5) - (bbox?.minLon ?? centroid.lon - 5));
+  const spanLat = Math.max(1.5, (bbox?.maxLat ?? centroid.lat + 5) - (bbox?.minLat ?? centroid.lat - 5));
+  const countrySpan = Math.max(spanLon, spanLat) * 0.087;
+
+  // Plaque dimensions clamped for elegance
+  const plaqueWidth = Math.max(0.75, Math.min(2.2, countrySpan * 0.42));
+  const plaqueHeight = plaqueWidth * 0.32;
+
+  // 2. High-DPI 2D Canvas for crisp typography
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 328;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  const pad = 12;
+  const w = canvas.width - pad * 2;
+  const h = canvas.height - pad * 2;
+  const r = 36;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Subtle dark drop shadow
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 8;
+
+  // Frosted dark pill background
+  const bgGrad = ctx.createLinearGradient(pad, pad, pad, pad + h);
+  bgGrad.addColorStop(0, 'rgba(10, 16, 32, 0.92)');
+  bgGrad.addColorStop(1, 'rgba(3, 7, 18, 0.96)');
+
+  ctx.beginPath();
+  ctx.roundRect(pad, pad, w, h, r);
+  ctx.fillStyle = bgGrad;
+  ctx.fill();
+
+  // Reset shadow for crisp borders
+  ctx.shadowColor = 'transparent';
+
+  // Elegant gold outer border
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = 'rgba(245, 158, 11, 0.85)';
+  ctx.stroke();
+
+  // Subtle inner border
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.beginPath();
+  ctx.roundRect(pad + 5, pad + 5, w - 10, h - 10, r - 4);
+  ctx.stroke();
+
+  // Flag Emoji or ISO Badge
+  const flagText = getFlagEmoji(iso2) || '🌐';
+  ctx.font = '84px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(flagText, pad + 38, pad + h * 0.46);
+
+  // Country Name in bold, modern, cinematic typography
+  const textX = pad + 155;
+  ctx.font = '900 64px "Cinzel", "Inter", -apple-system, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 4;
+
+  // Fit text if name is long
+  const maxTextWidth = w - 180;
+  let fontSize = 64;
+  while (ctx.measureText(countryName.toUpperCase()).width > maxTextWidth && fontSize > 28) {
+    fontSize -= 4;
+    ctx.font = `900 ${fontSize}px "Cinzel", "Inter", sans-serif`;
+  }
+  ctx.fillText(countryName.toUpperCase(), textX, pad + h * 0.42);
+
+  // Subtitle / Territory Badge
+  ctx.shadowColor = 'transparent';
+  ctx.font = '700 24px "JetBrains Mono", monospace';
+  ctx.fillStyle = '#fbbf24';
+  const subText = iso2 ? `SOVEREIGN TERRITORY [${iso2}]` : 'SOVEREIGN TERRITORY';
+  ctx.fillText(subText, textX, pad + h * 0.76);
+
+  // 3. Create Canvas Texture
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.generateMipmaps = true;
+
+  // 4. Create 3D Mesh
+  const geo = new THREE.PlaneGeometry(plaqueWidth, plaqueHeight);
+  const mat = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+
+  // 5. Position and Orient Mesh flat against the globe plateau surface
+  const pos = latLonToVector(centroid.lat, centroid.lon, topRadius + 0.016);
+  const normal = pos.clone().normalize();
+
+  const northPole = new THREE.Vector3(0, 1, 0);
+  let tangentNorth = new THREE.Vector3().subVectors(
+    northPole,
+    normal.clone().multiplyScalar(normal.dot(northPole))
+  );
+  if (tangentNorth.lengthSq() < 0.0001) {
+    tangentNorth = new THREE.Vector3(1, 0, 0);
+  } else {
+    tangentNorth.normalize();
+  }
+  const tangentEast = new THREE.Vector3().crossVectors(tangentNorth, normal).normalize();
+
+  const rotMatrix = new THREE.Matrix4().makeBasis(tangentEast, tangentNorth, normal);
+  mesh.setRotationFromMatrix(rotMatrix);
+  mesh.position.copy(pos);
+
+  return mesh;
+}
+
+// Create 3D Extruded Country Prism (Plateau) with National Flag texture and 3D surface name
 export function createExtrudedCountryMesh(countryFeature, baseRadius = 5.0, extrudeHeight = 0.28, colorHex = '#dc2626') {
   const group = new THREE.Group();
   const topRadius = baseRadius + extrudeHeight;
@@ -156,9 +320,22 @@ export function createExtrudedCountryMesh(countryFeature, baseRadius = 5.0, extr
     geometry.coordinates.forEach((poly) => ringsList.push(...poly));
   }
 
+  // Calculate country geographic bounding box for UV mapping
+  let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
+  ringsList.forEach((ring) => {
+    ring.forEach(([lon, lat]) => {
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    });
+  });
+  const bbox = { minLon, maxLon, minLat, maxLat };
+
   const wallVertices = [];
   const topOutlinePoints = [];
   const topCapVertices = [];
+  const topCapUvs = [];
 
   ringsList.forEach((ring) => {
     // Top border outline
@@ -174,12 +351,10 @@ export function createExtrudedCountryMesh(countryFeature, baseRadius = 5.0, extr
       const t2 = latLonToVector(lat2, lon2, topRadius);
 
       // Side wall quad (2 triangles)
-      // Triangle 1: b1, b2, t2
       wallVertices.push(b1.x, b1.y, b1.z);
       wallVertices.push(b2.x, b2.y, b2.z);
       wallVertices.push(t2.x, t2.y, t2.z);
 
-      // Triangle 2: b1, t2, t1
       wallVertices.push(b1.x, b1.y, b1.z);
       wallVertices.push(t2.x, t2.y, t2.z);
       wallVertices.push(t1.x, t1.y, t1.z);
@@ -192,9 +367,15 @@ export function createExtrudedCountryMesh(countryFeature, baseRadius = 5.0, extr
       topOutlinePoints.push(outlinePoints);
     }
 
-    // Top Cap Triangulation
-    const capVerts = triangulatePolygonOnSphere(ring, topRadius);
+    // Top Cap Triangulation with UV mapping for National Flag
+    const { vertices: capVerts, lonLats } = triangulatePolygonOnSphere(ring, topRadius);
     topCapVertices.push(...capVerts);
+
+    lonLats.forEach(([lon, lat]) => {
+      const u = Math.max(0, Math.min(1, (lon - minLon) / (maxLon - minLon || 1)));
+      const v = Math.max(0, Math.min(1, (lat - minLat) / (maxLat - minLat || 1)));
+      topCapUvs.push(u, v);
+    });
   });
 
   // 1. Extruded Side Walls Mesh (rich illuminated extrusion color)
@@ -215,25 +396,62 @@ export function createExtrudedCountryMesh(countryFeature, baseRadius = 5.0, extr
     group.add(wallMesh);
   }
 
-  // 2. Top Cap Surface Mesh (vibrant luminous plateau matching reference image)
+  // 2. Top Cap Surface Mesh with National Flag Texture!
   if (topCapVertices.length > 0) {
     const capGeo = new THREE.BufferGeometry();
     capGeo.setAttribute('position', new THREE.Float32BufferAttribute(topCapVertices, 3));
+    capGeo.setAttribute('uv', new THREE.Float32BufferAttribute(topCapUvs, 2));
     capGeo.computeVertexNormals();
 
+    const iso2 = getCountryIso2(countryFeature);
+    const countryName = countryFeature.properties.NAME || 'Country';
     const baseColor = new THREE.Color(colorHex);
+
     const capMat = new THREE.MeshStandardMaterial({
-      color: baseColor,
-      emissive: baseColor.clone().multiplyScalar(0.52),
-      roughness: 0.25,
-      metalness: 0.1,
+      color: 0xffffff,
+      roughness: 0.35,
+      metalness: 0.05,
       side: THREE.DoubleSide
     });
+
+    if (iso2) {
+      const flagUrl = `https://flagcdn.com/w1280/${iso2.toLowerCase()}.png`;
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.setCrossOrigin('anonymous');
+      textureLoader.load(
+        flagUrl,
+        (texture) => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.wrapS = THREE.ClampToEdgeWrapping;
+          texture.wrapT = THREE.ClampToEdgeWrapping;
+          capMat.map = texture;
+          capMat.emissive = new THREE.Color(0x222222);
+          capMat.needsUpdate = true;
+        },
+        undefined,
+        () => {
+          capMat.color = baseColor;
+          capMat.emissive = baseColor.clone().multiplyScalar(0.45);
+          capMat.needsUpdate = true;
+        }
+      );
+    } else {
+      capMat.color = baseColor;
+      capMat.emissive = baseColor.clone().multiplyScalar(0.45);
+    }
+
     const capMesh = new THREE.Mesh(capGeo, capMat);
     group.add(capMesh);
+
+    // 3. Inscribed 3D Country Name on Plateau Surface!
+    const centroid = getCountryCentroid(countryFeature);
+    const surfaceNameMesh = createCountrySurfaceNameMesh(countryName, iso2, centroid, topRadius, bbox);
+    if (surfaceNameMesh) {
+      group.add(surfaceNameMesh);
+    }
   }
 
-  // 3. Crisp Glowing Top Outline Border
+  // 4. Crisp Glowing Top Outline Border
   topOutlinePoints.forEach((pts) => {
     const outlineGeo = new THREE.BufferGeometry().setFromPoints(pts);
     const outlineMat = new THREE.LineBasicMaterial({

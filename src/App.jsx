@@ -5,7 +5,7 @@ import TimelineController from './components/UI/TimelineController';
 import DocumentaryOverlay from './components/UI/DocumentaryOverlay';
 import RecordingStudio from './components/UI/RecordingStudio';
 import GeopoliticalBanner from './components/UI/GeopoliticalBanner';
-import GeopoliticalLabels from './components/UI/GeopoliticalLabels';
+import ZoomControls from './components/UI/ZoomControls';
 import AllianceScorecard from './components/UI/AllianceScorecard';
 import SearchBar from './components/UI/SearchBar';
 import HoverTooltip from './components/UI/HoverTooltip';
@@ -211,23 +211,17 @@ export default function App() {
 
         {/* Geopolitical 3D Perspective Mode Overlays (Single Country Extrusion) */}
         {!cleanMode && appMode === 'geopolitical' && (
-          <>
-            <GeopoliticalBanner countryName={selectedCountry} />
-            <GeopoliticalLabels labels={labels} featuredCountry={selectedCountry} />
-          </>
+          <GeopoliticalBanner countryName={selectedCountry} />
         )}
 
         {/* Alliances & Coalitions Mode Overlays (Multi-Country Alliances) */}
         {!cleanMode && appMode === 'alliances' && (
-          <>
-            <AllianceScorecard
-              presetName={alliancePreset?.name}
-              alliances={alliances}
-              activeAllianceId={activeAllianceId}
-              onSelectActiveAlliance={setActiveAllianceId}
-            />
-            <GeopoliticalLabels labels={labels} />
-          </>
+          <AllianceScorecard
+            presetName={alliancePreset?.name}
+            alliances={alliances}
+            activeAllianceId={activeAllianceId}
+            onSelectActiveAlliance={setActiveAllianceId}
+          />
         )}
 
         {/* Expeditions Mode Overlays (Routes, Distance, Lower-Third Cards) */}
@@ -283,6 +277,9 @@ export default function App() {
             </button>
           </div>
         )}
+
+        {/* Floating Zoom & Camera Framing Controls (Bottom Right) */}
+        {!cleanMode && <ZoomControls />}
 
         {/* Recording Studio & Framing Controls (Top Right) */}
         {!cleanMode && (
