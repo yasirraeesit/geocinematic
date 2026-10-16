@@ -2,7 +2,10 @@ import React from 'react';
 
 export default function GeopoliticalBanner({ countryName = 'Iran' }) {
   return (
-    <div className="pointer-events-none fixed top-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center select-none text-center animate-fade-in">
+    <div
+      className="pointer-events-none fixed top-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center select-none text-center animate-fade-in"
+      style={{ position: 'fixed', top: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 20 }}
+    >
       {/* Top golden accent line with subtitle */}
       <div className="flex items-center gap-3">
         <div className="w-12 h-px bg-gradient-to-r from-transparent to-amber-400/80" />

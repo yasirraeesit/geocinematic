@@ -81,11 +81,12 @@ export default function SearchBar({ countriesList = [], onSelectCountry, selecte
       {/* Minimal Top-Bar Search Trigger Pill */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-4 left-44 z-30 hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-slate-950/80 hover:bg-slate-900 border border-slate-700/80 hover:border-amber-500/50 text-slate-300 hover:text-white transition shadow-lg text-xs"
+        className="studio-search-btn fixed top-4 left-44 z-30 hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-950/90 hover:bg-slate-900 border border-slate-700/80 hover:border-amber-500/60 text-slate-300 hover:text-white transition shadow-xl text-xs"
+        style={{ position: 'fixed', top: '1.25rem', left: '11.5rem', zIndex: 40 }}
         title="Search Country (Ctrl+K)"
       >
         <Search size={13} className="text-amber-400" />
-        <span className="text-slate-400 font-sans text-xs">
+        <span className="text-slate-300 font-sans text-xs">
           {selectedCountry ? `Viewing: ${selectedCountry}` : 'Search country...'}
         </span>
         <kbd className="text-[10px] font-mono bg-slate-800/90 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700">
@@ -96,7 +97,8 @@ export default function SearchBar({ countriesList = [], onSelectCountry, selecte
       {/* Mobile Search Icon Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-4 left-24 sm:hidden z-30 p-2 rounded-full bg-slate-950/80 border border-slate-700 text-amber-400 shadow-lg"
+        className="studio-search-btn fixed top-4 left-24 sm:hidden z-30 p-2 rounded-full bg-slate-950/90 border border-slate-700 text-amber-400 shadow-xl"
+        style={{ position: 'fixed', top: '1.25rem', left: '9.5rem', zIndex: 40 }}
         title="Search Country"
       >
         <Search size={16} />

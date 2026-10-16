@@ -15,6 +15,11 @@ export default function GeopoliticalLabels({ labels = [], featuredCountry }) {
           return null;
         }
 
+        // If not featured, skip if this is the featured country itself to avoid duplicate tags
+        if (!isFeatured && featuredCountry && name.toLowerCase() === featuredCountry.toLowerCase()) {
+          return null;
+        }
+
         if (isFeatured) {
           // Large Featured National Callout in center of extruded country
           return (

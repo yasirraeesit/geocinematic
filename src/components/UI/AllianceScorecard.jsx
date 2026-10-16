@@ -23,7 +23,10 @@ export default function AllianceScorecard({
   };
 
   return (
-    <div className="fixed top-16 left-1/2 -translate-x-1/2 z-20 w-full max-w-3xl px-4 flex flex-col items-center pointer-events-none select-none animate-fade-in">
+    <div
+      className="fixed top-16 left-1/2 -translate-x-1/2 z-20 w-full max-w-3xl px-4 flex flex-col items-center pointer-events-none select-none animate-fade-in"
+      style={{ position: 'fixed', top: '4.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 20 }}
+    >
       {/* Preset Title Header Bar with Collapse Toggle */}
       {presetName && (
         <button

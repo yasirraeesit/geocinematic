@@ -242,7 +242,10 @@ export default function App() {
 
         {/* Studio Mode Switcher Floating Dock */}
         {!cleanMode && (
-          <div className="fixed bottom-6 left-6 z-30 flex items-center p-1 bg-slate-950/90 backdrop-blur-2xl border border-slate-700/80 rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.8)]">
+          <div
+            className="studio-mode-dock fixed bottom-6 left-6 z-30 flex items-center p-1 bg-slate-950/90 backdrop-blur-2xl border border-slate-700/80 rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.8)]"
+            style={{ position: 'fixed', bottom: '1.5rem', left: '1.5rem', zIndex: 40 }}
+          >
             <button
               onClick={() => setAppMode('geopolitical')}
               className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all text-xs font-sans font-medium ${

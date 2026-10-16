@@ -81,7 +81,8 @@ export default function Sidebar({
       {!isOpen && (
         <button
           onClick={onToggle}
-          className="fixed left-4 top-4 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/85 hover:bg-slate-900 border border-slate-700/80 hover:border-amber-500/50 text-slate-300 hover:text-white transition shadow-lg text-xs font-mono"
+          className="studio-header-btn fixed left-4 top-4 z-30 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950/90 hover:bg-slate-900 border border-slate-700/80 hover:border-amber-500/60 text-slate-300 hover:text-white transition shadow-xl text-xs font-mono"
+          style={{ position: 'fixed', top: '1.25rem', left: '1.5rem', zIndex: 40 }}
           title="Open Studio Controls"
         >
           <Layers size={14} className="text-amber-400" />
@@ -93,16 +94,21 @@ export default function Sidebar({
       {/* Mobile Backdrop Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs sm:hidden animate-fade-in"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs sm:hidden animate-fade-in"
           onClick={onToggle}
         />
       )}
 
       {/* Main Responsive Drawer */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-40 w-80 sm:w-88 max-w-[85vw] bg-slate-950/95 backdrop-blur-2xl border-r border-slate-800/90 shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`studio-sidebar-panel fixed top-0 left-0 bottom-0 z-50 w-80 sm:w-88 max-w-[85vw] border-r border-slate-800/90 shadow-[0_20px_50px_rgba(0,0,0,0.95)] flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{
+          backgroundColor: '#050811',
+          transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+          zIndex: 50
+        }}
       >
         {/* Drawer Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-800/80">

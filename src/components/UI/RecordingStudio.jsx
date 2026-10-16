@@ -32,7 +32,10 @@ export default function RecordingStudio({
   };
 
   return (
-    <div className="fixed top-6 right-6 z-30 flex items-center gap-3">
+    <div
+      className="studio-recording-btn fixed top-6 right-6 z-30 flex items-center gap-3"
+      style={{ position: 'fixed', top: '1.25rem', right: '1.5rem', zIndex: 40 }}
+    >
       {/* Aspect Ratio Framing Guides for Video Creators */}
       <div className="backdrop-blur-md bg-slate-950/80 border border-slate-800 p-1 rounded-xl flex items-center gap-1 shadow-xl">
         <button

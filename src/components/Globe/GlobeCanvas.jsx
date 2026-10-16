@@ -517,7 +517,6 @@ export default function GlobeCanvas({
 
     // MODE A: MULTI-COUNTRY ALLIANCES & COALITIONS
     if (appMode === 'alliances') {
-      const labelCoords = [];
       let sumLat = 0;
       let sumLon = 0;
       let memberCount = 0;
@@ -535,17 +534,6 @@ export default function GlobeCanvas({
             sumLat += centroid.lat;
             sumLon += centroid.lon;
             memberCount++;
-
-            const countryVec = latLonToVector(centroid.lat, centroid.lon, 5.0 + extrudeHeight);
-            labelCoords.push({
-              name: feature.properties.NAME,
-              vec3: countryVec,
-              isFeatured: false,
-              flag: getFlagEmoji(feature.properties.ISO_A2),
-              iso2: feature.properties.ISO_A2,
-              color: alliance.color,
-              allianceName: alliance.name
-            });
           }
         });
       });
@@ -562,7 +550,9 @@ export default function GlobeCanvas({
         stateRef.current.isFlying = true;
       }
 
-      stateRef.current.activeLabelCoords = labelCoords;
+      // In Alliances mode, keep the globe clean; hover tooltip dynamically identifies members
+      stateRef.current.activeLabelCoords = [];
+      if (onLabelsUpdate) onLabelsUpdate([]);
       return;
     }
 
@@ -587,8 +577,8 @@ export default function GlobeCanvas({
       stateRef.current.targetLookAt = countryVec;
       stateRef.current.isFlying = true;
 
-      // 4. Gather Neighboring Countries for Floating Labels & Flags
-      const neighbors = getNeighborCountries(geoJsonData.features, feature, 7);
+      // 4. Gather Neighboring Countries for Floating Labels & Flags (Clean limit: 4 neighbors)
+      const neighbors = getNeighborCountries(geoJsonData.features, feature, 4);
       const labelCoords = [
         {
           name: feature.properties.NAME,
@@ -600,13 +590,15 @@ export default function GlobeCanvas({
       ];
 
       neighbors.forEach(({ feature: nf, centroid: nc }) => {
-        labelCoords.push({
-          name: nf.properties.NAME,
-          vec3: latLonToVector(nc.lat, nc.lon, 5.05),
-          isFeatured: false,
-          flag: getFlagEmoji(nf.properties.ISO_A2),
-          iso2: nf.properties.ISO_A2
-        });
+        if (nf.properties.NAME.toLowerCase() !== feature.properties.NAME.toLowerCase()) {
+          labelCoords.push({
+            name: nf.properties.NAME,
+            vec3: latLonToVector(nc.lat, nc.lon, 5.05),
+            isFeatured: false,
+            flag: getFlagEmoji(nf.properties.ISO_A2),
+            iso2: nf.properties.ISO_A2
+          });
+        }
       });
 
       stateRef.current.activeLabelCoords = labelCoords;
