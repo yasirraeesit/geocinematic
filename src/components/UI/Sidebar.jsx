@@ -48,6 +48,8 @@ export default function Sidebar({
   onGlobeStyleChange
 }) {
   const [activeTab, setActiveTab] = useState('geopolitical'); // 'geopolitical' | 'alliances' | 'stories' | 'builder' | 'camera'
+  const [countryFilter, setCountryFilter] = useState('');
+  const [newMemberName, setNewMemberName] = useState('');
 
   // Custom route form state
   const [fromCityId, setFromCityId] = useState('london');
@@ -206,20 +208,34 @@ export default function Sidebar({
 
               {/* Select Country */}
               <div>
-                <label className="block text-xs font-mono text-slate-300 mb-1.5 flex items-center gap-1.5">
-                  <MapPin size={12} className="text-amber-400" />
-                  <span>Featured Country Plateau:</span>
+                <label className="block text-xs font-mono text-slate-300 mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <MapPin size={12} className="text-amber-400" />
+                    <span>Featured Country Plateau:</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-amber-400 font-bold uppercase">{selectedCountry}</span>
                 </label>
+
+                {/* Search filter for countries */}
+                <input
+                  type="text"
+                  value={countryFilter}
+                  onChange={(e) => setCountryFilter(e.target.value)}
+                  placeholder="Filter 177 countries..."
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-200 placeholder-slate-500 mb-2 focus:outline-none focus:border-amber-400"
+                />
+
                 <select
                   value={selectedCountry}
                   onChange={(e) => onSelectCountry(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 font-serif text-sm"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 font-serif text-sm custom-scrollbar"
+                  size={5}
                 >
                   {(countriesList.length > 0
-                    ? countriesList
-                    : ['Iran', 'United States', 'China', 'Russia', 'Ukraine', 'India', 'Germany', 'Saudi Arabia', 'Pakistan', 'Iraq', 'Turkey', 'Egypt', 'France', 'United Kingdom', 'Japan', 'Brazil']
+                    ? countriesList.filter((c) => c.toLowerCase().includes(countryFilter.toLowerCase()))
+                    : ['Iran', 'United States', 'China', 'Russia', 'Ukraine', 'India', 'Saudi Arabia']
                   ).map((c) => (
-                    <option key={c} value={c}>
+                    <option key={c} value={c} className="py-1 px-2 hover:bg-slate-800 cursor-pointer">
                       {c}
                     </option>
                   ))}
@@ -357,12 +373,81 @@ export default function Sidebar({
 
               {/* Active Coalition Selector & Member Inspector */}
               <div>
-                <label className="block text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">
-                  Active Painting Brush & Teams
-                </label>
-                <p className="text-[11px] text-slate-400 mb-3">
-                  Select a team below, then click any country on the 3D globe to add or remove it!
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-mono text-slate-400 uppercase tracking-wider font-semibold">
+                    Painting Brush & Coalitions
+                  </label>
+                  <span className="text-[10px] font-mono text-rose-400 bg-rose-950/60 px-2 py-0.5 rounded border border-rose-800/40">
+                    CLICK GLOBE TO DRAFT
+                  </span>
+                </div>
+
+                {/* Active Paintbrush Banner */}
+                {(() => {
+                  const activeTeam = alliances.find((a) => a.id === activeAllianceId);
+                  if (!activeTeam) return null;
+                  return (
+                    <div
+                      className="p-3 mb-3 rounded-xl border flex items-center justify-between shadow-lg"
+                      style={{
+                        backgroundColor: `${activeTeam.color}15`,
+                        borderColor: `${activeTeam.color}60`
+                      }}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className="w-3.5 h-3.5 rounded-full shadow-md animate-pulse"
+                          style={{ backgroundColor: activeTeam.color }}
+                        />
+                        <div>
+                          <div className="text-[10px] font-mono text-slate-400 uppercase">Current Brush:</div>
+                          <div className="text-xs font-bold text-white font-sans">{activeTeam.name}</div>
+                        </div>
+                      </div>
+                      <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-black/60 text-white border border-white/20">
+                        {activeTeam.countries.length} countries
+                      </span>
+                    </div>
+                  );
+                })()}
+
+                {/* Direct Add Country Input */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!newMemberName.trim() || !activeAllianceId) return;
+                    const match = countriesList.find(
+                      (c) => c.toLowerCase() === newMemberName.trim().toLowerCase()
+                    ) || newMemberName.trim();
+
+                    if (onAlliancesChange) {
+                      onAlliancesChange((prev) =>
+                        prev.map((a) => {
+                          if (a.id === activeAllianceId && !a.countries.includes(match)) {
+                            return { ...a, countries: [...a.countries, match] };
+                          }
+                          return a;
+                        })
+                      );
+                    }
+                    setNewMemberName('');
+                  }}
+                  className="flex items-center gap-2 mb-3"
+                >
+                  <input
+                    type="text"
+                    value={newMemberName}
+                    onChange={(e) => setNewMemberName(e.target.value)}
+                    placeholder="Add country by name (e.g. Turkey)..."
+                    className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-rose-400"
+                  />
+                  <button
+                    type="submit"
+                    className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/50 hover:bg-rose-500/30 transition shadow-sm"
+                  >
+                    + Add
+                  </button>
+                </form>
 
                 <div className="space-y-3">
                   {alliances.map((alliance) => {

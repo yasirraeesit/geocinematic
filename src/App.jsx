@@ -189,7 +189,13 @@ export default function App() {
         />
 
         {/* Hover Cursor Tooltip (Click to Focus) */}
-        {!cleanMode && <HoverTooltip hoverData={hoverData} />}
+        {!cleanMode && (
+          <HoverTooltip
+            hoverData={hoverData}
+            appMode={appMode}
+            activeAlliance={alliances.find((a) => a.id === activeAllianceId)}
+          />
+        )}
 
         {/* Top Global Search Bar with instant fly-to */}
         {!cleanMode && (
@@ -234,38 +240,56 @@ export default function App() {
           />
         )}
 
-        {/* Studio Mode Switcher Pill (3 Documentary Modes) */}
+        {/* Studio Mode Switcher Floating Dock */}
         {!cleanMode && (
-          <div className="fixed bottom-6 left-6 z-30 flex items-center p-1 bg-slate-950/85 backdrop-blur-md border border-slate-800/90 rounded-xl shadow-2xl font-mono text-xs">
+          <div className="fixed bottom-6 left-6 z-30 flex items-center p-1.5 bg-slate-950/90 backdrop-blur-3xl border border-slate-700/80 rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.8)] font-mono text-xs">
             <button
               onClick={() => setAppMode('geopolitical')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
+              className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all duration-200 ${
                 appMode === 'geopolitical'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.25)] font-bold scale-102'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60 border border-transparent'
               }`}
             >
-              <span>🏛️ 3D Perspective</span>
+              <span className="text-sm">🏛️</span>
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-sans tracking-tight">3D Perspective</span>
+                <span className="text-[9px] opacity-70 font-mono">Single Plateau</span>
+              </div>
             </button>
+
+            <div className="w-px h-6 bg-slate-800/80 mx-1" />
+
             <button
               onClick={() => setAppMode('alliances')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
+              className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all duration-200 ${
                 appMode === 'alliances'
-                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.25)] font-bold scale-102'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60 border border-transparent'
               }`}
             >
-              <span>🛡️ Alliances & Coalitions</span>
+              <span className="text-sm">🛡️</span>
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-sans tracking-tight">Coalitions</span>
+                <span className="text-[9px] opacity-70 font-mono">Alliances & Treaties</span>
+              </div>
             </button>
+
+            <div className="w-px h-6 bg-slate-800/80 mx-1" />
+
             <button
               onClick={() => setAppMode('expeditions')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
+              className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all duration-200 ${
                 appMode === 'expeditions'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-[0_0_20px_rgba(6,182,212,0.25)] font-bold scale-102'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60 border border-transparent'
               }`}
             >
-              <span>✈️ Travel Routes</span>
+              <span className="text-sm">✈️</span>
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-sans tracking-tight">Flight Routes</span>
+                <span className="text-[9px] opacity-70 font-mono">Great Circle Arcs</span>
+              </div>
             </button>
           </div>
         )}
