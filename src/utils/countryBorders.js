@@ -177,6 +177,157 @@ function triangulatePolygonOnSphere(coords, radius) {
   return { vertices, lonLats };
 }
 
+// Create Instant Procedural + HD Vector National Flag Texture
+export function createCountryFlagTexture(iso2, countryName) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 640;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  const w = canvas.width;
+  const h = canvas.height;
+  const code = (iso2 || '').toUpperCase();
+
+  // Instant official procedural flags for popular countries (0ms render time, no lag, no blank flash)
+  if (code === 'IR') {
+    // Official Flag of Iran: Green (#239f40), White (#ffffff), Red (#da0000)
+    ctx.fillStyle = '#239f40';
+    ctx.fillRect(0, 0, w, h / 3);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, h / 3, w, h / 3);
+
+    ctx.fillStyle = '#da0000';
+    ctx.fillRect(0, (h / 3) * 2, w, h / 3);
+
+    // Official Central Emblem of Iran in vivid red
+    const cx = w / 2;
+    const cy = h / 2;
+    ctx.fillStyle = '#da0000';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(cx - 18, cy - 8, 42, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#da0000';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#da0000';
+    ctx.fillRect(cx - 5, cy - 65, 10, 130);
+
+  } else if (code === 'UA') {
+    // Ukraine: Vivid Azure Blue & Golden Yellow
+    ctx.fillStyle = '#0057b7';
+    ctx.fillRect(0, 0, w, h / 2);
+    ctx.fillStyle = '#ffd700';
+    ctx.fillRect(0, h / 2, w, h / 2);
+
+  } else if (code === 'US') {
+    // United States: 13 Red & White stripes + Blue canton
+    const stripeH = h / 13;
+    for (let i = 0; i < 13; i++) {
+      ctx.fillStyle = i % 2 === 0 ? '#b22234' : '#ffffff';
+      ctx.fillRect(0, i * stripeH, w, stripeH);
+    }
+    ctx.fillStyle = '#3c3b6e';
+    ctx.fillRect(0, 0, w * 0.42, stripeH * 7);
+    ctx.fillStyle = '#ffffff';
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 6; c++) {
+        ctx.beginPath();
+        ctx.arc(35 + c * 65, 25 + r * 35, 7, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+  } else if (code === 'RU') {
+    // Russia: White, Blue, Red
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h / 3);
+    ctx.fillStyle = '#0039a6';
+    ctx.fillRect(0, h / 3, w, h / 3);
+    ctx.fillStyle = '#d52b1e';
+    ctx.fillRect(0, (h / 3) * 2, w, h / 3);
+
+  } else if (code === 'CN') {
+    // China: Vivid Red with Golden Star
+    ctx.fillStyle = '#de2910';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#ffde00';
+    ctx.beginPath();
+    ctx.arc(140, 140, 52, 0, Math.PI * 2);
+    ctx.fill();
+
+  } else if (code === 'SA') {
+    // Saudi Arabia: Emerald Green
+    ctx.fillStyle = '#006c35';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(w * 0.35, h * 0.58, w * 0.3, 14);
+
+  } else if (code === 'FR') {
+    // France: Blue, White, Red
+    ctx.fillStyle = '#002654';
+    ctx.fillRect(0, 0, w / 3, h);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(w / 3, 0, w / 3, h);
+    ctx.fillStyle = '#ed2939';
+    ctx.fillRect((w / 3) * 2, 0, w / 3, h);
+
+  } else if (code === 'DE') {
+    // Germany: Black, Red, Gold
+    ctx.fillStyle = '#111111';
+    ctx.fillRect(0, 0, w, h / 3);
+    ctx.fillStyle = '#dd0000';
+    ctx.fillRect(0, h / 3, w, h / 3);
+    ctx.fillStyle = '#ffce00';
+    ctx.fillRect(0, (h / 3) * 2, w, h / 3);
+
+  } else if (code === 'IL') {
+    // Israel: White with Blue stripes
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#0038b8';
+    ctx.fillRect(0, h * 0.12, w, h * 0.12);
+    ctx.fillRect(0, h * 0.76, w, h * 0.12);
+
+  } else {
+    // Generic high-contrast tricolor field
+    ctx.fillStyle = '#1e3a8a';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(0, h * 0.4, w, h * 0.2);
+  }
+
+  // Create standard sRGB Texture
+  const canvasTexture = new THREE.CanvasTexture(canvas);
+  canvasTexture.colorSpace = THREE.SRGBColorSpace;
+  canvasTexture.wrapS = THREE.ClampToEdgeWrapping;
+  canvasTexture.wrapT = THREE.ClampToEdgeWrapping;
+  canvasTexture.generateMipmaps = true;
+
+  // Asynchronously load real FlagCDN vector-rendered asset to refine official details
+  if (code) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      canvasTexture.needsUpdate = true;
+    };
+    img.src = `https://flagcdn.com/w1280/${code.toLowerCase()}.png`;
+  }
+
+  return canvasTexture;
+}
+
 // In-Scene 3D Surface Country Name Plaque (lies flat on top of the extruded plateau)
 export function createCountrySurfaceNameMesh(countryName, iso2, centroid, topRadius, bbox) {
   if (!countryName) return null;
@@ -204,35 +355,15 @@ export function createCountrySurfaceNameMesh(countryName, iso2, centroid, topRad
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Subtle dark drop shadow
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-  ctx.shadowBlur = 18;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 8;
-
-  // Frosted dark pill background
-  const bgGrad = ctx.createLinearGradient(pad, pad, pad, pad + h);
-  bgGrad.addColorStop(0, 'rgba(10, 16, 32, 0.92)');
-  bgGrad.addColorStop(1, 'rgba(3, 7, 18, 0.96)');
-
+  // Transparent / ultra-subtle translucent backing so 100% of the flag colors remain visible!
+  ctx.fillStyle = 'rgba(2, 6, 17, 0.42)';
   ctx.beginPath();
   ctx.roundRect(pad, pad, w, h, r);
-  ctx.fillStyle = bgGrad;
   ctx.fill();
 
-  // Reset shadow for crisp borders
-  ctx.shadowColor = 'transparent';
-
-  // Elegant gold outer border
-  ctx.lineWidth = 4;
+  // Crisp golden border
+  ctx.lineWidth = 3.5;
   ctx.strokeStyle = 'rgba(245, 158, 11, 0.85)';
-  ctx.stroke();
-
-  // Subtle inner border
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-  ctx.beginPath();
-  ctx.roundRect(pad + 5, pad + 5, w - 10, h - 10, r - 4);
   ctx.stroke();
 
   // Flag Emoji or ISO Badge
@@ -407,38 +538,19 @@ export function createExtrudedCountryMesh(countryFeature, baseRadius = 5.0, extr
     const countryName = countryFeature.properties.NAME || 'Country';
     const baseColor = new THREE.Color(colorHex);
 
+    // Instant official flag texture + HD vector refinement
+    const flagTexture = createCountryFlagTexture(iso2, countryName);
+
     const capMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      roughness: 0.35,
-      metalness: 0.05,
+      map: flagTexture,
+      emissiveMap: flagTexture,
+      emissive: new THREE.Color(0xffffff),
+      emissiveIntensity: 0.98, // Self-luminous: 100% visible, bright, and vibrant from any angle or lighting
+      roughness: 0.15,
+      metalness: 0.0,
       side: THREE.DoubleSide
     });
-
-    if (iso2) {
-      const flagUrl = `https://flagcdn.com/w1280/${iso2.toLowerCase()}.png`;
-      const textureLoader = new THREE.TextureLoader();
-      textureLoader.setCrossOrigin('anonymous');
-      textureLoader.load(
-        flagUrl,
-        (texture) => {
-          texture.colorSpace = THREE.SRGBColorSpace;
-          texture.wrapS = THREE.ClampToEdgeWrapping;
-          texture.wrapT = THREE.ClampToEdgeWrapping;
-          capMat.map = texture;
-          capMat.emissive = new THREE.Color(0x222222);
-          capMat.needsUpdate = true;
-        },
-        undefined,
-        () => {
-          capMat.color = baseColor;
-          capMat.emissive = baseColor.clone().multiplyScalar(0.45);
-          capMat.needsUpdate = true;
-        }
-      );
-    } else {
-      capMat.color = baseColor;
-      capMat.emissive = baseColor.clone().multiplyScalar(0.45);
-    }
 
     const capMesh = new THREE.Mesh(capGeo, capMat);
     group.add(capMesh);

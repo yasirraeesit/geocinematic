@@ -125,15 +125,20 @@ export default function GlobeCanvas({
     renderer.toneMappingExposure = 1.25;
     container.appendChild(renderer.domElement);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0x223355, 0.9);
+    // Lighting: Balanced cinematic illumination ensuring vivid, natural flag colors
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.25);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff7ed, 2.4);
+    const sunLight = new THREE.DirectionalLight(0xfff8ee, 2.2);
     sunLight.position.set(15, 10, 20);
     scene.add(sunLight);
 
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+    // Camera Headlight: Ensures whatever country is in view is always directly illuminated with clean light
+    const headLight = new THREE.DirectionalLight(0xffffff, 0.75);
+    camera.add(headLight);
+    scene.add(camera);
+
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.9);
     rimLight.position.set(-15, -5, -15);
     scene.add(rimLight);
 
